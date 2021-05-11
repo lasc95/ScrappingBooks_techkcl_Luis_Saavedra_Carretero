@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import requests as rq
+import re 
+import pandas as pd
 
-def getAndParseURL(url):
+def obtenerYConvertirURL(url):
     """
     Función que tiene como objetivo obtener/parsear cualquier 
     página, mediante su url
@@ -13,7 +15,7 @@ def getAndParseURL(url):
     except Exception as err:
         return err
 
-    
+
 
 
 def obtenerLibroUrls(url):
@@ -22,16 +24,22 @@ def obtenerLibroUrls(url):
     (de bookstoscrape).
     """
     try:
-        soup = getAndParseURL(url)
+        soup = obtenerYConvertirURL(url)
         return(["/".join(url.split("/")[:-1]) + "/" + x.div.a.get('href') for x in soup.findAll("article", class_ = "product_pod")])
     except Exception as err:
         return err
 
 
+def obtenerTodosLibros(paginas_url):
+    libros_url = []
+    for page in paginas_url:
+        libros_url.extend(obtenerLibroUrls(page)) #extendemos desde un iterable como es la obtencion de las urls de los libros
+    return libros_url
 
 
-def obtenerDatosLibros(libros_url, names, stock, img_urls, categories, ratings, upc, type_of, price_without_tax, price_with_tax,tax, no_reviews, avl):
+def obtenerDatosLibros(libros_url):
     #vamos a obtener toda la data de los libros
+    print('Extrayendo datos de libros')
     diccionario_todo = {}
     names = []
     prices = []
@@ -47,7 +55,7 @@ def obtenerDatosLibros(libros_url, names, stock, img_urls, categories, ratings, 
     no_reviews = []
     avl = []    
     for url in libros_url:
-        soup = getAndParseURL(url)
+        soup = obtenerYConvertirURL(url)
         #el nombre del producto
         names.append(soup.find('div', class_ = re.compile('product_main')).h1.text)
         #el precio del producto
@@ -75,16 +83,37 @@ def obtenerDatosLibros(libros_url, names, stock, img_urls, categories, ratings, 
         #disponibles
         avl.append(soup.find('p', {'class': 'availability'}).getText().replace('\n', '').strip()[10:12] + ' available')
     
-    diccionario_todo['name'] = names
+    diccionario_todo['names'] = names
     diccionario_todo['stock'] = stock 
     diccionario_todo['img_urls'] = img_urls
     diccionario_todo['categories'] = categories
     diccionario_todo['ratings'] = ratings
     diccionario_todo['upc'] = upc 
     diccionario_todo['type_of'] = type_of
-    diccionario_todo['price_whitout_tax'] = price_without_tax
+    diccionario_todo['price_without_tax'] = price_without_tax
     diccionario_todo['price_with_tax'] = price_with_tax
     diccionario_todo['tax'] = tax 
     diccionario_todo['no_reviews'] = no_reviews
-    diccionario_todo['alv'] = avl
+    diccionario_todo['avl'] = avl
+    print('extracción exitosa')
     return diccionario_todo
+
+def crearDataFrame(dict_):
+    print('Creando DataFrame...')
+    df = pd.DataFrame({'Title': dict_['names'], 'Price': dict_['price_with_tax'], 'Stock': dict_['stock'], "Category": dict_['categories'], 
+                             "Cover": dict_['img_urls'], "UPC": dict_['upc'], "Product Type": dict_['type_of'], "Price (excl. tax)": dict_['price_without_tax'],
+                             "Price (incl. tax)" : dict_['price_with_tax'], "Tax" : dict_['tax'], "Availability" : dict_['avl'], "Number of reviews" : dict_['no_reviews'] 
+                            })
+    print('Creación DataFrame exitosa')
+    l = []
+    for i in df['Category']:
+        l.append(i.split('_')[0])
+    df['Category'] = l
+    return df
+
+
+def crearCsv(df):
+    print('Exportando a csv')
+    #exportamos a un csv
+    df.to_csv('encargo_scrapping_books_Luis_Saavedra_Carretero.csv', index = False)
+    print('exportación finalizada')

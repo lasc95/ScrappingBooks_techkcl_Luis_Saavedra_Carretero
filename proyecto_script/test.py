@@ -1,27 +1,26 @@
 import unittest
-
 import bs4 
 from functions import *
-
+#algunas pruebas unitarias
 
 class Test(unittest.TestCase):
     def setUp(self):
         print('Realizando pruebas')
     
-    def test_getAndParseUrl_true(self):
+    def test_obtenerYConvertirURL_true(self):
         """
-        Prueba diseñada para función getAndParseUrl
+        Prueba diseñada para función obtenerYConvertirURL
         """
         url = 'http://books.toscrape.com/index.html'
-        actual = getAndParseURL(url)
+        actual = obtenerYConvertirURL(url)
         self.assertTrue(type(actual) is bs4.BeautifulSoup)
     
-    def test_getAndParseUrl_false(self):
+    def test_obtenerYConvertirURL_false(self):
         """
-        Prueba diseñada para función getAndParseUrl en caso de que sea fallido
+        Prueba diseñada para función obtenerYConvertirURL en caso de que sea fallido
         """
         url = 'http://books.asd.com'
-        actual = getAndParseURL(url)
+        actual = obtenerYConvertirURL(url)
         self.assertRaises(Exception, actual)
     
     def test_obtener_libros_true(self):
