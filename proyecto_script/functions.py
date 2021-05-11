@@ -15,9 +15,6 @@ def obtenerYConvertirURL(url):
     except Exception as err:
         return err
 
-
-
-
 def obtenerLibroUrls(url):
     """
     Función para obtener libros desde cualquier página 
@@ -29,16 +26,21 @@ def obtenerLibroUrls(url):
     except Exception as err:
         return err
 
-
 def obtenerTodosLibros(paginas_url):
+    """
+    Funcion para obtener la url de todos los libros de las páginas(50).
+    Utilizaremos la función creada anteriormente "ObtenerlibrosUrls"
+    """
     libros_url = []
     for page in paginas_url:
         libros_url.extend(obtenerLibroUrls(page)) #extendemos desde un iterable como es la obtencion de las urls de los libros
     return libros_url
 
-
 def obtenerDatosLibros(libros_url):
-    #vamos a obtener toda la data de los libros
+    """
+    Función Scrapping. Obtener los datos de los libros desde las url
+    obtenidas con la función obtenerTodosLibros
+    """
     print('Extrayendo datos de libros')
     diccionario_todo = {}
     names = []
@@ -99,6 +101,10 @@ def obtenerDatosLibros(libros_url):
     return diccionario_todo
 
 def crearDataFrame(dict_):
+    """
+    Función para crear dataframe con pandas desde un diccionario
+    que devuelve la función obtenerDatosLibros
+    """
     print('Creando DataFrame...')
     df = pd.DataFrame({'Title': dict_['names'], 'Price': dict_['price_with_tax'], 'Stock': dict_['stock'], "Category": dict_['categories'], 
                              "Cover": dict_['img_urls'], "UPC": dict_['upc'], "Product Type": dict_['type_of'], "Price (excl. tax)": dict_['price_without_tax'],
@@ -111,8 +117,10 @@ def crearDataFrame(dict_):
     df['Category'] = l
     return df
 
-
 def crearCsv(df):
+    """
+    Exportamos el csv desde un dataframe
+    """
     print('Exportando a csv')
     #exportamos a un csv
     df.to_csv('encargo_scrapping_books_Luis_Saavedra_Carretero.csv', index = False)
